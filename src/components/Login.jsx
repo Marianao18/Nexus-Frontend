@@ -16,7 +16,6 @@ const Login = () => {
         setError('');
         setCargando(true);
 
-        // Limpiamos rastro antes de iniciar nueva sesión
         localStorage.clear();
 
         try {
@@ -25,25 +24,18 @@ const Login = () => {
                 password
             });
 
-            // Ajuste para capturar bien los datos del backend
             const userData = res.data.user || res.data;
             const nombre = userData.nombre || 'Usuario';
             const rolOriginal = userData.rol || '';
             const rolNormalizado = rolOriginal.toLowerCase().trim();
 
-            // Guardamos datos de sesión
-            //localStorage.setItem('rol', rolNormalizado);
-            //localStorage.setItem('userName', nombre);
-            // Guardamos datos de sesión
             localStorage.setItem('rol', rolNormalizado);
             localStorage.setItem('userName', nombre);
-            localStorage.setItem('access_token', res.data.access);   // ← token JWT
-            localStorage.setItem('refresh_token', res.data.refresh); // ← refresh token
+            localStorage.setItem('access_token', res.data.access);   
+            localStorage.setItem('refresh_token', res.data.refresh); 
 
-            // Disparamos evento para que el Navbar y App.js se actualicen
             window.dispatchEvent(new Event("authChange"));
 
-            // Redirección lógica
             if (rolNormalizado.includes('admin')) {
                 navigate('/admin-dashboard');
             } else {
@@ -69,7 +61,7 @@ const Login = () => {
             <div className="login-card">
                 <header className="login-header">
                     <h2 className="login-title">NEXUS <span>ID</span></h2>
-                    <p className="login-subtitle">Panel de Acceso Centralizado</p>
+                    <p className="login-subtitle"> Iniciar sesión</p>
                 </header>
 
                 <form onSubmit={manejarLogin} className="login-form">
@@ -107,6 +99,16 @@ const Login = () => {
                         {cargando ? 'Verificando...' : 'Entrar al Sistema'}
                     </button>
                 </form>
+
+                <div className="login-footer">
+                    <button 
+                        type="button" 
+                        className="forgot-password-link"
+                        onClick={() => navigate('/recuperar-contrasena')}
+                    >
+                        ¿Olvidaste tu contraseña? <span>Recupérala aquí</span>
+                    </button>
+                </div>
 
                 {error && (
                     <div className="login-error-box fade-in">

@@ -13,6 +13,8 @@ import Login             from './components/Login.jsx';
 import SolicitudDocente from './components/SolicitudDocente.jsx';
 import HomeAdm           from './components/HomeAdm.jsx';
 import AdminSolicitudes from './components/AdminSolicitudes.jsx';
+import RecuperarPassword from './components/RecuperarPassword';
+import RestablecerPassword from './components/RestablecerPassword';
 
 const ProtectedRoute = ({ userRole, children }) => {
     if (!userRole) {
@@ -74,7 +76,7 @@ export default function App() {
         <Router>
             <div className="app-wrapper" style={{ position: 'relative' }}>
                 <Background />
-                {!isAdminView && <Navbar />}
+                <Navbar />
 
                 <main style={{ 
                     minHeight: '85vh', 
@@ -84,9 +86,11 @@ export default function App() {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/registro" element={<Registro />} />
                         <Route path="/ser-docente" element={<SolicitudDocente />} /> 
+                        
                         <Route path="/login" element={
                             isAdminView ? <Navigate to="/admin-dashboard" replace /> : <Login />
                         } />
+
                         <Route 
                             path="/admin-dashboard" 
                             element={
@@ -95,6 +99,7 @@ export default function App() {
                                 </ProtectedRoute>
                             } 
                         />
+                        
                         <Route 
                             path="/AdminSolicitudes" 
                             element={
@@ -103,6 +108,12 @@ export default function App() {
                                 </ProtectedRoute>
                             } 
                         />
+
+                        {/* Rutas de recuperación de contraseña */}
+                        <Route path="/recuperar-contrasena" element={<RecuperarPassword />} />
+                        <Route path="/restablecer-password/:uid/:token" element={<RestablecerPassword />} />
+                        
+                        {/* Esta ruta (*) SIEMPRE debe ir al final de todas */}
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </main>
