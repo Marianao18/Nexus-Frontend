@@ -31,13 +31,16 @@ const Login = () => {
 
             localStorage.setItem('rol', rolNormalizado);
             localStorage.setItem('userName', nombre);
-            localStorage.setItem('access_token', res.data.access);   
-            localStorage.setItem('refresh_token', res.data.refresh); 
+            localStorage.setItem('access_token', res.data.access);
+            localStorage.setItem('refresh_token', res.data.refresh);
 
             window.dispatchEvent(new Event("authChange"));
 
+            // Validaciones de login: redirige según el rol del usuario (admin, docente, o usuario general)
             if (rolNormalizado.includes('admin')) {
                 navigate('/admin-dashboard');
+            } else if (rolNormalizado.includes('docente')) {
+                navigate('/docente-dashboard');
             } else {
                 navigate('/');
             }
@@ -101,8 +104,8 @@ const Login = () => {
                 </form>
 
                 <div className="login-footer">
-                    <button 
-                        type="button" 
+                    <button
+                        type="button"
                         className="forgot-password-link"
                         onClick={() => navigate('/recuperar-contrasena')}
                     >
