@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HomeDocente.css';
+import { logout } from '../utils/auth';
 
 const IconHome     = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
 const IconUser     = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
@@ -334,7 +335,7 @@ export default function HomeDocente() {
             </button>
           ))}
         </nav>
-        <button className="nd-logout-btn" onClick={cerrarSesion}>
+        <button className="nd-logout-btn" onClick={logout}>
           <IconLogout /> Cerrar sesión
         </button>
       </aside>

@@ -42,7 +42,7 @@ const Login = () => {
             } else if (rolNormalizado.includes('docente')) {
                 navigate('/docente-dashboard');
             } else {
-                navigate('/');
+                navigate('/estudiante-dashboard');
             }
 
         } catch (err) {

@@ -16,6 +16,7 @@ import AdminSolicitudes from './components/AdminSolicitudes.jsx';
 import RecuperarPassword from './components/RecuperarPassword';
 import RestablecerPassword from './components/RestablecerPassword';
 import HomeDocente from './components/HomeDocente.jsx';
+import HomeEstudiante from './components/HomeEstudiante.jsx';
 
 const ProtectedRoute = ({ userRole, allowedRoles, children }) => {
     if (!userRole) {
@@ -72,16 +73,18 @@ export default function App() {
     }, []);
 
     const isAdminView = userRole && userRole.toLowerCase().includes('admin');
+    const isDocenteView = userRole && userRole.toLowerCase().includes('docente');
+    const isEstudianteView = userRole && userRole.toLowerCase().includes('estudiante');
 
     return (
         <Router>
             <div className="app-wrapper" style={{ position: 'relative' }}>
                 <Background />
-                <Navbar />
+                {!isAdminView && !isDocenteView && <Navbar />}
 
                 <main style={{
                     minHeight: '85vh',
-                    paddingTop: !isAdminView ? '80px' : '0'
+                    paddingTop: (!isAdminView && !isDocenteView && !isEstudianteView) ? '80px' : '0'
                 }}>
                     <Routes>
                         <Route path="/" element={<HomePage />} />
@@ -124,12 +127,22 @@ export default function App() {
                             }
                         />
 
+                        {/* home estudiante */}
+                        <Route
+                            path="/estudiante-dashboard"
+                            element={
+                                <ProtectedRoute userRole={userRole} allowedRoles={['estudiante']}>
+                                    <HomeEstudiante />
+                                </ProtectedRoute>
+                            }
+                        />
+
                         {/* Esta ruta (*) SIEMPRE debe ir al final de todas */}
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </main>
 
-                {!isAdminView && <Footer />}
+                {!isAdminView && !isDocenteView && <Footer />}
             </div>
         </Router>
     );
