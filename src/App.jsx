@@ -17,7 +17,7 @@ import RecuperarPassword from './components/RecuperarPassword';
 import RestablecerPassword from './components/RestablecerPassword';
 import HomeDocente from './components/HomeDocente.jsx';
 import HomeEstudiante from './components/HomeEstudiante.jsx';
-
+import CambiarPassword from './components/CambiarPassword.jsx';
 const ProtectedRoute = ({ userRole, allowedRoles, children }) => {
     if (!userRole) {
         return <Navigate to="/login" replace />;
@@ -42,15 +42,24 @@ const HomePage = () => (
 export default function App() {
     const [userRole, setUserRole] = useState(localStorage.getItem('rol'));
 
-    useEffect(() => {
-        const syncAuth = () => {
-            setUserRole(localStorage.getItem('rol'));
-        };
+    // Sincronización de autenticación
+    const syncAuth = () => {
+        setUserRole(localStorage.getItem('rol'));
+    };
 
+    useEffect(() => {
+        // 1. Limpieza de rol inválido
+        const rolActual = localStorage.getItem('rol');
+        if (rolActual && !['admin', 'docente', 'estudiante'].includes(rolActual.toLowerCase())) {
+            localStorage.removeItem('rol');
+            setUserRole(null);
+        }
+
+        // 2. Eventos de escucha
         window.addEventListener('storage', syncAuth);
-        // Evento personalizado para cambios en la misma pestaña
         window.addEventListener('authChange', syncAuth);
 
+        // 3. Observer para animaciones
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach(entry => {
@@ -65,6 +74,7 @@ export default function App() {
         const revealElements = document.querySelectorAll('.reveal');
         revealElements.forEach(el => observer.observe(el));
 
+        // Cleanup al desmontar
         return () => {
             window.removeEventListener('storage', syncAuth);
             window.removeEventListener('authChange', syncAuth);
@@ -72,19 +82,19 @@ export default function App() {
         };
     }, []);
 
-    const isAdminView = userRole && userRole.toLowerCase().includes('admin');
-    const isDocenteView = userRole && userRole.toLowerCase().includes('docente');
-    const isEstudianteView = userRole && userRole.toLowerCase().includes('estudiante');
+    const isDashboard = userRole && ['admin', 'docente'].includes(userRole.toLowerCase());
 
     return (
         <Router>
             <div className="app-wrapper" style={{ position: 'relative' }}>
                 <Background />
-                {!isAdminView && !isDocenteView && <Navbar />}
+                
+                {/* Navbar solo si no es admin/docente o si no hay rol */}
+                {(!userRole || !['admin', 'docente'].includes(String(userRole).toLowerCase())) && <Navbar />}
 
-                <main style={{
-                    minHeight: '85vh',
-                    paddingTop: (!isAdminView && !isDocenteView && !isEstudianteView) ? '80px' : '0'
+                <main style={{ 
+                    minHeight: '85vh', 
+                    paddingTop: isDashboard ? '0' : '80px' 
                 }}>
                     <Routes>
                         <Route path="/" element={<HomePage />} />
@@ -92,57 +102,41 @@ export default function App() {
                         <Route path="/ser-docente" element={<SolicitudDocente />} />
 
                         <Route path="/login" element={
-                            isAdminView ? <Navigate to="/admin-dashboard" replace /> : <Login />
+                            (userRole && userRole.toLowerCase() === 'admin') 
+                            ? <Navigate to="/admin-dashboard" replace /> 
+                            : <Login />
                         } />
 
-                        <Route
-                            path="/admin-dashboard"
-                            element={
-                                <ProtectedRoute userRole={userRole}>
-                                    <HomeAdm />
-                                </ProtectedRoute>
-                            }
-                        />
+                        <Route path="/admin-dashboard" element={
+                            <ProtectedRoute userRole={userRole} allowedRoles={['admin']}><HomeAdm /></ProtectedRoute>
+                        } />
 
-                        <Route
-                            path="/AdminSolicitudes"
-                            element={
-                                <ProtectedRoute userRole={userRole}>
-                                    <AdminSolicitudes />
-                                </ProtectedRoute>
-                            }
-                        />
+                        <Route path="/AdminSolicitudes" element={
+                            <ProtectedRoute userRole={userRole} allowedRoles={['admin']}><AdminSolicitudes /></ProtectedRoute>
+                        } />
 
-                        {/* Rutas de recuperación de contraseña */}
                         <Route path="/recuperar-contrasena" element={<RecuperarPassword />} />
                         <Route path="/restablecer-password/:uid/:token" element={<RestablecerPassword />} />
 
-                        {/* home docente */}
-                        <Route
-                            path="/docente-dashboard"
-                            element={
-                                <ProtectedRoute userRole={userRole} allowedRoles={['docente']}>
-                                    <HomeDocente />
-                                </ProtectedRoute>
-                            }
-                        />
+                        <Route path="/docente-dashboard" element={<ProtectedRoute userRole={userRole} allowedRoles={['docente']}>
+                        {localStorage.getItem('debe_cambiar') === 'true' ? (
+                        <Navigate to="/cambiar-password-obligatorio" replace />
+                    ) : (
+            <HomeDocente />
+        )}
+    </ProtectedRoute>
+} />
 
-                        {/* home estudiante */}
-                        <Route
-                            path="/estudiante-dashboard"
-                            element={
-                                <ProtectedRoute userRole={userRole} allowedRoles={['estudiante']}>
-                                    <HomeEstudiante />
-                                </ProtectedRoute>
-                            }
-                        />
+                        <Route path="/estudiante-dashboard" element={
+                            <ProtectedRoute userRole={userRole} allowedRoles={['estudiante']}><HomeEstudiante /></ProtectedRoute>
+                        } />
+                        <Route path="/cambiar-password-obligatorio" element={<CambiarPassword />} />
 
-                        {/* Esta ruta (*) SIEMPRE debe ir al final de todas */}
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </main>
 
-                {!isAdminView && !isDocenteView && <Footer />}
+               {(!userRole || userRole.toLowerCase() === 'admin') && <Footer />}
             </div>
         </Router>
     );

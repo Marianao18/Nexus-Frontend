@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import styles from './Navbar.module.css'; // Importante: usamos 'styles'
+import styles from './Navbar.module.css'; 
 
 const LogoIcon = () => (
     <svg viewBox="0 0 20 20" fill="none" width="20" height="20">
@@ -11,8 +11,33 @@ const LogoIcon = () => (
 );
 
 export default function Navbar() {
-    const userName = localStorage.getItem('userName');
-    const userRole = localStorage.getItem('rol');
+    const [user, setUser] = useState({
+        name: localStorage.getItem('userName'),
+        role: localStorage.getItem('rol')?.toLowerCase()
+    });
+
+    useEffect(() => {
+        const checkAuth = () => {
+            setUser({
+                name: localStorage.getItem('userName'),
+                role: localStorage.getItem('rol')?.toLowerCase()
+            });
+        };
+
+        window.addEventListener('authChange', checkAuth);
+        window.addEventListener('storage', checkAuth);
+
+        return () => {
+            window.removeEventListener('authChange', checkAuth);
+            window.removeEventListener('storage', checkAuth);
+        };
+    }, []);
+
+    // --- FILTRO DE VISIBILIDAD ESTRICTO ---
+    // Si es estudiante o docente, NO se muestra nada (ellos usan su propio Sidebar)
+    if (user.role === 'estudiante' || user.role === 'docente') {
+        return null;
+    }
 
     const manejarLogout = () => {
         if (window.confirm("¿Deseas cerrar sesión?")) {
@@ -24,35 +49,48 @@ export default function Navbar() {
 
     return (
         <nav className={styles.nav}>
+            {/* --- SECCIÓN LOGO --- */}
             <Link to="/" className={styles.logo}>
                 <div className={styles.logoMark}><LogoIcon /></div>
                 <span className={styles.logoText}>NEX<span>U</span>S</span>
             </Link>
 
+            {/* --- ENLACES DE NAVEGACIÓN --- */}
             <ul className={styles.links}>
-                <li><Link to="/">Explorar</Link></li>
-                <li><Link to="/rutas">Rutas</Link></li>
-                <li><Link to="/ser-docente">Docentes</Link></li>
+                {/* 1. Solo para Visitantes (No logueados) */}
+                {!user.role && (
+                    <>
+                        <li><Link to="/">Explorar</Link></li>
+                        <li><Link to="/rutas">Rutas</Link></li>
+                        <li><Link to="/ser-docente">Docentes</Link></li>
+                    </>
+                )}
 
-                {userRole?.toLowerCase().includes('admin') && (
+                {/* 2. Solo para Administrador */}
+                {user.role === 'admin' && (
                     <li>
                         <Link to="/admin-dashboard" className={styles.adminLink}>
-                            PANEL ADMIN
+                            PANEL DE CONTROL ADMIN
                         </Link>
                     </li>
                 )}
             </ul>
 
+            {/* --- SECCIÓN DE AUTENTICACIÓN --- */}
             <div className={styles.authSection}>
-                {userName ? (
+                {user.name ? (
                     <div className={styles.userContainer}>
                         <div className={styles.userInfo}>
-                            <span className={styles.userGreet}>Bienvenido</span>
-                            <span className={styles.userLabel}>{userName}</span>
+                            <span className={styles.userGreet}>Sesión de Administrador</span>
+                            <span className={styles.userLabel}>{user.name}</span>
                         </div>
-                        <button onClick={manejarLogout} className={styles.cta}>
-                            Salir
-                        </button>
+                        
+                        {/* El admin sí necesita el botón de salir en el navbar horizontal */}
+                        {user.role === 'admin' && (
+                            <button onClick={manejarLogout} className={styles.cta}>
+                                Cerrar Sesión
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <Link to="/login" className={styles.cta}>

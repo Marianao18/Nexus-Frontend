@@ -4,7 +4,7 @@
     align-items: center;
     min-height: 100vh;
     padding: 20px;
-    background: transparent; /* Permite que se vea tu Background.jsx */
+    background: transparent; 
 }
 
 .registro-card {

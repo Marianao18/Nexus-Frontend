@@ -56,7 +56,7 @@ const Registro = () => {
         setCargando(true);
 
         try {
-            const respuesta = await axios.post('http://localhost:8000/api/registrar-estudiante/', {
+            const respuesta = await axios.post('http://localhost:8000/api/usuarios/registrar-estudiante/', {
                 nombre: nombre.trim(),
                 email: email.trim().toLowerCase(),
                 password: password
@@ -67,8 +67,22 @@ const Registro = () => {
                 navigate('/login');
             }
         } catch (err) {
-            console.error(err);
-            setError(err.response?.data?.message || "Error al conectar con el servidor.");
+    console.error("Error completo:", err.response?.data);
+
+    // Si el backend responde con datos de error
+    if (err.response && err.response.data) {
+        const data = err.response.data;
+
+        if (data.email) {
+            setError("Este correo electrónico ya está registrado. Intenta con otro o inicia sesión.");
+        } else if (data.password) {
+            setError("La contraseña no cumple con los requisitos del servidor.");
+        } else {
+            setError("Hubo un problema con los datos ingresados.");
+        }
+    } else {
+        setError("No se pudo conectar con el servidor. Revisa tu conexión.");
+    }
         } finally {
             setCargando(false);
         }

@@ -19,10 +19,10 @@ const Login = () => {
         localStorage.clear();
 
         try {
-            const res = await axios.post('http://localhost:8000/api/login/', {
-                email: email.trim().toLowerCase(),
-                password
-            });
+        const res = await axios.post('http://localhost:8000/api/usuarios/login/', { // Agregamos /api/
+        email: email.trim().toLowerCase(),
+        password
+        });
 
             const userData = res.data.user || res.data;
             const nombre = userData.nombre || 'Usuario';
@@ -33,17 +33,18 @@ const Login = () => {
             localStorage.setItem('userName', nombre);
             localStorage.setItem('access_token', res.data.access);
             localStorage.setItem('refresh_token', res.data.refresh);
-
+            localStorage.setItem('debe_cambiar', userData.debe_cambiar_password); 
+            localStorage.setItem('access_token', res.data.access);
             window.dispatchEvent(new Event("authChange"));
 
-            // Validaciones de login: redirige según el rol del usuario (admin, docente, o usuario general)
-            if (rolNormalizado.includes('admin')) {
-                navigate('/admin-dashboard');
-            } else if (rolNormalizado.includes('docente')) {
-                navigate('/docente-dashboard');
+            if (userData.debe_cambiar_password === true) {
+                navigate('/cambiar-password-obligatorio');
             } else {
-                navigate('/estudiante-dashboard');
-            }
+
+                if (userData.rol.toLowerCase().includes('admin')) navigate('/admin-dashboard');
+                else if (userData.rol.toLowerCase().includes('docente')) navigate('/docente-dashboard');
+                else navigate('/estudiante-dashboard');
+}
 
         } catch (err) {
             console.error("Error en login:", err);
