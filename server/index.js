@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
-const db = require('./db.js');
+const { pool: db } = require('./db.js');
 const { cifrarPassword, verificarLogin } = require('./auth.js');
 
 const app = express();
@@ -16,8 +16,8 @@ const transporter = nodemailer.createTransport({
     port: 587,
     secure: false, 
     auth: {
-        user: '', //Tu correo electronico
-        pass: '' //Poner contraseña de google
+        user: 'correo', 
+        pass: 'contraseña' 
     },
     tls: {
         rejectUnauthorized: false 
@@ -147,6 +147,27 @@ app.post('/api/admin/aprobar-docente/:id', async (req, res) => {
     } catch (err) {
         console.error("Error crítico:", err);
         res.status(500).json({ error: "Error en el servidor durante la aprobación." });
+    }
+});
+
+app.get('/api/admin/usuarios', async (req, res) => {
+    try {
+        const result = await db.query('SELECT id, nombre, email, rol FROM usuarios ORDER BY id ASC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Error al obtener usuarios:", err.message);
+        res.status(500).json({ error: "Error en el servidor" });
+    }
+});
+
+app.delete('/api/admin/usuarios/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query('DELETE FROM usuarios WHERE id = $1', [id]);
+        res.json({ message: "Usuario eliminado correctamente" });
+    } catch (err) {
+        console.error("Error al eliminar usuario:", err.message);
+        res.status(500).json({ error: "No se pudo eliminar" });
     }
 });
 

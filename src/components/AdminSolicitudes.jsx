@@ -74,57 +74,66 @@ const AdminSolicitudes = () => {
     };
 
     if (cargando) return <p style={{ color: '#00e5ff', padding: '20px' }}>Consultando base de datos de NEXUS...</p>;
+    
 
     return (
-        <div style={styles.container}>
-            <div style={styles.header}>
-                <h3 style={{ margin: 0 }}>Bandeja de Entrada de Postulaciones</h3>
-                <span style={styles.badge}>{solicitudes.length} Pendientes</span>
+        <div className="na-table-container na-fade-in">
+            <div className="na-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 className="na-section-title" style={{ margin: 0, color: '#fff' }}>
+                    Bandeja de Entrada de Postulaciones
+                </h3>
+                <span className="na-badge-pending">
+                    {solicitudes.length} Pendientes
+                </span>
             </div>
 
-            <table style={styles.table}>
-                <thead>
-                    <tr style={styles.tableHeader}>
-                        <th style={styles.th}>Nombre del Postulante</th>
-                        <th style={styles.th}>Especialidad</th>
-                        <th style={styles.th}>Correo Electrónico</th>
-                        <th style={styles.th}>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {solicitudes.length > 0 ? (
-                        solicitudes.map((sol) => (
-                            <tr key={sol.id} style={styles.tr}>
-                                <td style={styles.td}>{sol.nombre_completo}</td>
-                                <td style={styles.td}>
-                                    <span style={styles.especialidadTag}>{sol.especialidad}</span>
-                                </td>
-                                <td style={styles.td}>{sol.email}</td>
-                                <td style={styles.td}>
-                                    <button
-                                        onClick={() => aprobar(sol.id)}
-                                        style={styles.btnApprove}
-                                    >
-                                        Aprobar
-                                    </button>
-                                    <button
-                                        onClick={() => rechazar(sol.id)}
-                                        style={styles.btnReject}
-                                    >
-                                        Rechazar
-                                    </button>
+            <div className="na-table-wrapper">
+                <table className="na-table">
+                    <thead>
+                        <tr>
+                            <th className="na-th">Nombre del Postulante</th>
+                            <th className="na-th">Especialidad</th>
+                            <th className="na-th">Correo Electrónico</th>
+                            <th className="na-th">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {solicitudes.length > 0 ? (
+                            solicitudes.map((sol) => (
+                                <tr key={sol.id} className="na-table-row">
+                                    <td className="na-td">{sol.nombre_completo}</td>
+                                    <td className="na-td">
+                                        <span className="na-specialty-tag">{sol.especialidad}</span>
+                                    </td>
+                                    <td className="na-td">{sol.email}</td>
+                                    <td className="na-td">
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button
+                                                onClick={() => aprobar(sol.id)}
+                                                className="na-btn-approve"
+                                            >
+                                                Aprobar
+                                            </button>
+                                            <button
+                                                onClick={() => rechazar(sol.id)}
+                                                className="na-btn-reject"
+                                            >
+                                                Rechazar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="4" className="na-empty-msg">
+                                    No hay solicitudes nuevas por el momento.
                                 </td>
                             </tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan="4" style={styles.noData}>
-                                No hay solicitudes nuevas por el momento.
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+                        )}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

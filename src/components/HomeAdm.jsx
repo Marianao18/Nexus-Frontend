@@ -1,85 +1,197 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; 
 import AdminSolicitudes from './AdminSolicitudes';
+import AdminUsuarios from './AdminUsuarios';
 import './HomeAdm.css';
 
+// ── ICONOS SVG (ESTILO NEXUS) ──
+const IconHome = () => (
+    <div className="na-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </div>
+);
+
+const IconSolicitudes = () => (
+    <div className="na-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+    </div>
+);
+
+const IconUsuarios = () => (
+    <div className="na-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+    </div>
+);
+
 const AdminHome = () => {
-    const [vista, setVista] = useState('resumen'); 
+    const [vista, setVista] = useState('resumen');
+    const [usuarios, setUsuarios] = useState([]); // Datos de la DB
+    const [solicitudes, setSolicitudes] = useState([]); // Datos de la DB para solicitudes
+    const [cargando, setCargando] = useState(false);
     const navigate = useNavigate();
 
+    // ── LÓGICA PARA OBTENER USUARIOS ──
+    const obtenerUsuarios = async () => {
+        setCargando(true);
+        try {
+            // Ajustamos a la ruta completa que definiste en el backend
+            const response = await axios.get('http://localhost:5000/api/admin/usuarios');
+            setUsuarios(response.data);
+        } catch (error) {
+            console.error("Error al traer usuarios:", error);
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    // ── LÓGICA PARA OBTENER SOLICITUDES ──
+    const obtenerSolicitudes = async () => {
+        setCargando(true);
+        try {
+            const response = await axios.get('http://localhost:5000/api/admin/solicitudes');
+            setSolicitudes(response.data);
+        } catch (error) {
+            console.error("Error al traer solicitudes:", error);
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    const eliminarUsuario = async (id) => {
+        if (window.confirm("¿Seguro que deseas eliminar este usuario?")) {
+            try {
+                await axios.delete(`http://localhost:5000/api/admin/usuarios/${id}`);
+                setUsuarios(usuarios.filter(u => u.id !== id));
+            } catch (error) {
+                console.error("Error al eliminar:", error);
+            }
+        }
+    };
+
+    // ── EFECTO PARA CARGAR DATOS SEGÚN LA VISTA SELECCIONADA ──
+    useEffect(() => {
+        if (vista === 'usuarios') {
+            obtenerUsuarios();
+        } else if (vista === 'solicitudes') {
+            obtenerSolicitudes();
+        }
+    }, [vista]);
+
     const cerrarSesion = () => {
-        if (window.confirm("¿Estás seguro de que deseas salir?")) {
+        if (window.confirm("¿Deseas salir de NEXUS?")) {
             localStorage.clear();
-            window.dispatchEvent(new Event("authChange")); // Notifica a App.js
             navigate('/login');
         }
     };
 
     return (
-        <div className="dashboard-admin">
-            <nav className="admin-navbar">
-                <div className="admin-logo">
-                    NEXUS <span className="admin-tag">ADMIN PANEL</span>
+        <div className="na-layout">
+            {/* ── BARRA LATERAL (SIDEBAR) ── */}
+            <aside className="na-sidebar">
+                <div className="na-sidebar-logo">
+                    <span>NEXUS</span> <span className="na-sidebar-tag">ADMIN</span>
                 </div>
-                
-                <div className="admin-menu">
+
+                <nav className="na-sidebar-nav">
                     <button 
                         onClick={() => setVista('resumen')} 
-                        className={vista === 'resumen' ? 'nav-btn-active' : 'nav-btn'}> Panel de Control
+                        className={`na-nav-item ${vista === 'resumen' ? 'na-nav-active' : ''}`}
+                    >
+                        <IconHome /> Inicio
                     </button>
                     <button 
                         onClick={() => setVista('solicitudes')} 
-                        className={vista === 'solicitudes' ? 'nav-btn-active' : 'nav-btn'}> Solicitudes Pendientes
+                        className={`na-nav-item ${vista === 'solicitudes' ? 'na-nav-active' : ''}`}
+                    >
+                        <IconSolicitudes /> Solicitudes
                     </button>
-                    <button className="nav-btn"> Usuarios</button>
-                    
-                    <button onClick={cerrarSesion} className="logout-btn">
-                        Cerrar Sesión
+                    <button 
+                        onClick={() => setVista('usuarios')} 
+                        className={`na-nav-item ${vista === 'usuarios' ? 'na-nav-active' : ''}`}
+                    >
+                        <IconUsuarios /> Usuarios
                     </button>
-                </div>
-            </nav>
+                </nav>
 
-            <main className="admin-content">
-                {vista === 'resumen' ? (
-                    <section className="section-fade">
-                        <h2 className="admin-title">Estado Global de la Plataforma</h2>
-                        
-                        <div className="metrics-grid">
-                            <MetricCard title="Docentes Activos" value="24" icon="👨‍🏫" color="#00e5ff" />
-                            <MetricCard title="Estudiantes" value="1,150" icon="🎓" color="#2ecc71" />
-                            <MetricCard title="Solicitudes" value="3" icon="📩" color="#f1c40f" />
-                            <MetricCard title="Cursos" value="12" icon="📚" color="#9b59b6" />
-                        </div>
-                        
-                        <div className="recent-activity">
-                            <h3 style={{ borderBottom: '1px solid #30363d', paddingBottom: '10px' }}>
-                                Actividad Reciente
-                            </h3>
-                            <ul className="activity-list">
-                                <li>• Juan David Pinzón envió una solicitud de docente.</li>
-                                <li>• Servidor funcionando correctamente en puerto 5000.</li>
-                                <li>• Base de datos sincronizada con NEXUS Cloud.</li>
-                            </ul>
-                        </div>
-                    </section>
-                ) : (
-                    <div className="section-fade">
-                        <AdminSolicitudes /> 
+                <button onClick={cerrarSesion} className="na-logout-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Cerrar Sesión
+                </button>
+            </aside>
+
+            {/* ── CONTENIDO PRINCIPAL (MAIN) ── */}
+            <main className="na-main">
+                <header className="na-topbar">
+                    <div className="na-breadcrumb">
+                        {vista === 'resumen' ? 'Inicio' : vista === 'solicitudes' ? 'Solicitudes' : 'Usuarios'}
                     </div>
-                )}
+                    <div className="na-user-pill">
+                        <span>Hola, Administrador</span>
+                        <div className="na-avatar-circle">AD</div>
+                    </div>
+                </header>
+
+                <div className="na-content">
+                    {/* VISTA: INICIO / RESUMEN */}
+                    {vista === 'resumen' && (
+                        <div className="na-view na-fade-in">
+                            <div className="na-welcome-banner">
+                                <div>
+                                    <p className="na-welcome-greeting">Bienvenido de nuevo,</p>
+                                    <h1 className="na-welcome-name">Panel Administrativo</h1>
+                                    <span className="na-welcome-role">CONTROL GLOBAL</span>
+                                </div>
+                                <div className="na-avatar-initials-lg">AD</div>
+                            </div>
+                            
+                            <div className="na-stats-grid">
+                                {/* Tus tarjetas de estadísticas aquí */}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* VISTA: SOLICITUDES */}
+                    {vista === 'solicitudes' && (
+                        <div className="na-table-container na-fade-in">
+                            {cargando ? (
+                                <div className="na-empty-msg">Cargando solicitudes...</div>
+                            ) : (
+                                <AdminSolicitudes solicitudes={solicitudes} />
+                            )}
+                        </div>
+                    )}
+
+                    {/* VISTA: USUARIOS (Datos Reales de DB) */}
+                    {vista === 'usuarios' && (
+                        cargando ? (
+                            <div className="na-empty-msg">Cargando base de datos de NEXUS...</div>
+                        ) : (
+                            <AdminUsuarios 
+                                usuarios={usuarios} 
+                                eliminarUsuario={eliminarUsuario} 
+                            />
+                        )
+                    )}
+                </div>
             </main>
         </div>
     );
 };
-
-const MetricCard = ({ title, value, icon, color }) => (
-    <div className="metric-card" style={{ borderTop: `4px solid ${color}` }}>
-        <div className="card-header">
-            <span className="card-title">{title}</span>
-            <span style={{ fontSize: '20px' }}>{icon}</span>
-        </div>
-        <div className="card-value">{value}</div>
-    </div>
-);
 
 export default AdminHome;
