@@ -60,9 +60,9 @@ export default function Navbar() {
                 {/* 1. Solo para Visitantes (No logueados) */}
                 {!user.role && (
                     <>
-                        <li><Link to="/">Explorar</Link></li>
-                        <li><Link to="/rutas">Rutas</Link></li>
-                        <li><Link to="/ser-docente">Docentes</Link></li>
+                        <li class = "subTittle1"><Link to="/">Explorar</Link></li>
+                        <li class = "subTittle2"><Link to="/rutas">Rutas</Link></li>
+                        <li class = "subTittle3"><Link to="/ser-docente">Docentes</Link></li>
                     </>
                 )}
 

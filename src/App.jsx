@@ -18,6 +18,7 @@ import RestablecerPassword from './components/RestablecerPassword';
 import HomeDocente from './components/HomeDocente.jsx';
 import HomeEstudiante from './components/HomeEstudiante.jsx';
 import CambiarPassword from './components/CambiarPassword.jsx';
+import RutasPage from './components/RutasPage.jsx';
 const ProtectedRoute = ({ userRole, allowedRoles, children }) => {
     if (!userRole) {
         return <Navigate to="/login" replace />;
@@ -100,6 +101,7 @@ export default function App() {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/registro" element={<Registro />} />
                         <Route path="/ser-docente" element={<SolicitudDocente />} />
+                        <Route path="/rutas" element={<RutasPage />} />
 
                         <Route path="/login" element={
                             (userRole && userRole.toLowerCase() === 'admin') 

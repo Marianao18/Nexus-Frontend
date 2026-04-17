@@ -56,7 +56,7 @@ const AdminHome = () => {
         }
     };
 
-    // ── LÓGICA PARA OBTENER SOLICITUDES ──
+    //  LÓGICA PARA OBTENER SOLICITUDES ──
     const obtenerSolicitudes = async () => {
         setCargando(true);
         try {
